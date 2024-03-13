@@ -53,8 +53,8 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
 //        // 참고로, 'Fri Jul 21 23:25:11 KST 2023'의 의미는 '요일 월 일 시:분:초 기준시각나라 년도' 이다.
 
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim(AUTHORITIES_KEY, authorities)
+                .setSubject(authentication.getName())  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장된다. (아이디)
+                .claim(AUTHORITIES_KEY, authorities)  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장된다. (권한)
                 .setExpiration(tokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
@@ -66,8 +66,8 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
                 .build();
     }
 
-    public Authentication getAuthentication(String accessToken) {
-        Claims claims = parseClaims(accessToken);
+    public Authentication getAuthentication(String accessToken) {  // Access Token의 Payload에 저장된 사용자의 아이디와 권한 정보를 토대로 인증하여 Authentication 객체를 만들어 반환하는 메소드
+        Claims claims = parseClaims(accessToken);  // Access Token의 Payload에 저장된 Claim을 꺼내옴. (JWT 토큰에서 사용자의 아이디와 권한 정보를 획득할 목적)
 
         if (claims.get(AUTHORITIES_KEY) == null) {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");  // 클라이언트가 잘못된 요청을 한 것이 아니라, 서버에서 처리 중에 예기치 않은 에러가 발생한 것이기에, 500 error status code가 적절하다.
@@ -111,7 +111,7 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
         return false;
     }
 
-    private Claims parseClaims(String accessToken) {
+    private Claims parseClaims(String accessToken) {  // Access Token의 Payload에 저장된 Claim을 꺼내오는 메소드 (JWT 토큰에서 사용자의 아이디와 권한 정보를 획득할 목적)
         try {
             return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
         } catch (ExpiredJwtException e) {
