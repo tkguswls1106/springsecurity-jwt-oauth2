@@ -19,7 +19,7 @@ public class UserLoginRequestDto {
     }
 
 
-    // UsernamePasswordAuthenticationToken을 반환하여 차후 이 객체를 이용하여 아이디와 비밀번호가 일치하는지 검증하는 로직을 사용할 예정이다.
+    // UsernamePasswordAuthenticationToken을 반환하여 차후 이 객체를 이용하여 로그인계정아이디와 비밀번호가 일치하는지 검증하는 로직을 사용할 예정이다.
     public UsernamePasswordAuthenticationToken toAuthentication() {
         return new UsernamePasswordAuthenticationToken(loginId, firstPw);
     }

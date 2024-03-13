@@ -39,6 +39,7 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
 
     // 토큰 생성
     public TokenDto generateTokenDto(Authentication authentication) {  // 파라미터로 전달해주는 authentication은 현재 인증 성공한 사용자를 나타내는 Authentication 객체이다.
+        // (참고로 이 메소드의 파라미터 인증객체의 name 안에는 로그인계정아이디가 아닌, CustomUserDetailsService의 createUserDetails메소드에서 진행하여 나온 String으로 변환된 사용자DB의PKid가 들어있다.)
 
         // 사용자의 권한(authority) 정보를 문자열로 변환하는 부분임.
         // 예를 들어, 사용자가 "ROLE_USER"와 "ROLE_ADMIN" 두 가지 권한을 가지고 있다면, 위 코드는 "ROLE_USER,ROLE_ADMIN"과 같은 문자열을 생성함.
@@ -53,8 +54,8 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
 //        // 참고로, 'Fri Jul 21 23:25:11 KST 2023'의 의미는 '요일 월 일 시:분:초 기준시각나라 년도' 이다.
 
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장된다. (아이디)
-                .claim(AUTHORITIES_KEY, authorities)  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장된다. (권한)
+                .setSubject(authentication.getName())  // Payload에 String으로 변환해둔 사용자DB의PKid와 권한 정보가 저장되어야만한다. (아이디)
+                .claim(AUTHORITIES_KEY, authorities)  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장되어야만한다. (권한)
                 .setExpiration(tokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.

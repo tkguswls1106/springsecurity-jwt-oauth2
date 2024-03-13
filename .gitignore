@@ -41,3 +41,6 @@ out/
 
 ## 내가 jwt 보안을 우려하여 따로 파일로 빼두고 gitignore에 추가해둠.
 **/application-jwt.properties
+
+## 내가 redis 보안을 우려하여 따로 파일로 빼두고 gitignore에 추가해둠.
+**/application-redis.properties
