@@ -4,7 +4,6 @@ import com.shj.springboot3.dto.token.TokenDto;
 import com.shj.springboot3.dto.user.*;
 import com.shj.springboot3.response.ResponseCode;
 import com.shj.springboot3.response.ResponseData;
-import com.shj.springboot3.service.auth.AuthService;
 import com.shj.springboot3.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,37 +33,10 @@ public class AuthController {
     // -> 서비스단의 login 메소드: 결과적으로 'AuthenticationProvider에 파라미터로 넣어준 UsernamePasswordAuthenticationToken 인증토큰객체'와 'DB에서 가져온 UserDetails 객체'에 대하여 사용자 아이디+비밀번호를 일치하는지 체킹함.
     // -> 일치 성공하면 예외처리 발생없이 정상적으로 토큰을 generateTokenDto()메소드로 발행시켜 프론트엔드에게 반환해줌.
 
-    private final AuthService authService;
 
-
-    @GetMapping("/auth")
-    public ResponseEntity isLogin() {  // 로그인 상태 여부 확인
+    @GetMapping("/oauth2/signup")
+    public void oauth2signup() {
         Long userId = SecurityUtil.getCurrentMemberId();
-        UserIdResponseDto userIdResponseDto = new UserIdResponseDto(userId);
-
-        return ResponseData.toResponseEntity(ResponseCode.READ_IS_LOGIN, userIdResponseDto);
-    }
-
-    @PostMapping("/signup")
-    public ResponseEntity joinUser(@RequestBody UserSignupRequestDto userSignupRequestDto) {  // 회원가입
-        UserResponseDto userResponseDto = authService.signup(userSignupRequestDto);
-        return ResponseData.toResponseEntity(ResponseCode.CREATED_USER, userResponseDto);
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity login(@RequestBody UserLoginRequestDto userLoginRequestDto) {  // 로그인
-        TokenDto tokenDto = authService.login(userLoginRequestDto);
-        return ResponseData.toResponseEntity(ResponseCode.LOGIN_SUCCESS, tokenDto);
-    }
-
-    @GetMapping("/login")
-    public ResponseEntity getLogin() {  // 로그인 api가 get방식으로 요청올시에
-        return ResponseData.toResponseEntity(ResponseCode.GET_LOGIN);
-    }
-
-    @PutMapping("/password")
-    public ResponseEntity updatePassword(@RequestBody UserUpdatePwRequestDto userUpdatePwRequestDto) {  // 비밀번호 수정
-        authService.updatePw(userUpdatePwRequestDto);
-        return ResponseData.toResponseEntity(ResponseCode.UPDATE_PASSWORD);
+        System.out.println("@@@@@@@@@@@@@@@@@@ userId: " + userId + " @@@@@@@@@@@@@@@@@@");
     }
 }

@@ -1,5 +1,7 @@
 package com.shj.springboot3.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shj.springboot3.jwt.JwtExceptionFilter;
 import com.shj.springboot3.jwt.JwtFilter;
 import com.shj.springboot3.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +19,15 @@ public class JwtSecurityConfig extends SecurityConfigurerAdapter<DefaultSecurity
     // 그리고 메소드 내에서 addFilterBefore()를 통해 커스텀필터를 UsernamePasswordAuthenticationFilter필터보다 순서를 먼저 실행시키도록 설정하여, JWT의 유효성 검사를 먼저 진행하도록 한다.
 
     private final TokenProvider tokenProvider;
+    private final ObjectMapper objectMapper;
 
 
     @Override
     public void configure(HttpSecurity http) {
         JwtFilter customFilter = new JwtFilter(tokenProvider);
         http.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
+
+        JwtExceptionFilter jwtExceptionFilter = new JwtExceptionFilter(objectMapper);
+        http.addFilterBefore(jwtExceptionFilter, JwtFilter.class);
     }
 }
