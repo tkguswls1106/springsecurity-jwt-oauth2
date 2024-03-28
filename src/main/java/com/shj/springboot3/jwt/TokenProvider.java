@@ -1,5 +1,6 @@
 package com.shj.springboot3.jwt;
 
+import com.shj.springboot3.domain.user.Role;
 import com.shj.springboot3.dto.auth.TokenDto;
 import com.shj.springboot3.oauth.CustomOAuth2User;
 import io.jsonwebtoken.*;
@@ -39,34 +40,62 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
     }
 
 
-    // 토큰 생성
-    public TokenDto generateTokenDto(Authentication authentication) {  // 파라미터로 전달해주는 authentication은 현재 인증 성공한 사용자를 나타내는 Authentication 객체이다.
+    // 전체 토큰 새로 생성
+    public TokenDto generateTokenDto(Long userId, Role role) {  // 파라미터로 전달해주는 authentication은 현재 인증 성공한 사용자를 나타내는 Authentication 객체이다.
         // (참고로 이 메소드의 파라미터 인증객체의 name 안에는 로그인계정아이디가 아닌, CustomUserDetailsService의 createUserDetails메소드에서 진행하여 나온 String으로 변환된 사용자DB의PKid가 들어있다.)
 
         // 사용자의 권한(authority) 정보를 문자열로 변환하는 부분임.
         // 예를 들어, 사용자가 "ROLE_USER"와 "ROLE_ADMIN" 두 가지 권한을 가지고 있다면, 위 코드는 "ROLE_USER,ROLE_ADMIN"과 같은 문자열을 생성함.
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+//        String authorities = authentication.getAuthorities().stream()
+//                .map(GrantedAuthority::getAuthority)
+//                .collect(Collectors.joining(","));
+        // 어차피 권한을 하나씩밖에 안넣을것이므로, 위의 것 말고 더욱 간단하게 Role로 구성하여 코드를 바꿨음.
 
+        String accessToken = generateAccessToken(userId, role);
+        String refreshToken = generateRefreshToken();
+
+        return TokenDto.builder()
+                .grantType(BEARER_TYPE)
+                .accessToken(accessToken)
+                .accessTokenExpiresIn(parseClaims(accessToken).getExpiration().getTime())
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    // Access 토큰이 만료된 경우, Refresh Token으로 Access Token 재발급하기
+    public TokenDto generateAccessTokenByRefreshToken(Long userId, Role role, String refreshToken) {
+        String accessToken = generateAccessToken(userId, role);
+
+        return TokenDto.builder()
+                .grantType(BEARER_TYPE)
+                .accessToken(accessToken)
+                .accessTokenExpiresIn(parseClaims(accessToken).getExpiration().getTime())
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    // Access Token 생성 후 반환하는 메소드
+    public String generateAccessToken(Long userId, Role role) {
         long now = (new Date()).getTime();
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
-        Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
-//        System.out.println(tokenExpiresIn);
-//        // 이것은 원래 'Fri Jul 21 23:25:11 KST 2023'처럼 '로그인한시각+만료시간6시간 = 로그인토큰만료시간'을 콘솔에 출력해주는 코드이다.
-//        // 참고로, 'Fri Jul 21 23:25:11 KST 2023'의 의미는 '요일 월 일 시:분:초 기준시각나라 년도' 이다.
 
-        CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-        Long userId = oAuth2User.getUserId();
         String strUserId = String.valueOf(userId);
 
         // Access Token 생성
         String accessToken = Jwts.builder()
                 .setSubject(strUserId)  // Payload에 String으로 변환해둔 사용자DB의PKid와 권한 정보가 저장되어야만한다. (아이디)
-                .claim(AUTHORITIES_KEY, authorities)  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장되어야만한다. (권한)
+                .claim(AUTHORITIES_KEY, role.getKey())  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장되어야만한다. (권한)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
+
+        return accessToken;
+    }
+
+    // Refresh Token 생성 후 반환하는 메소드
+    public String generateRefreshToken() {
+        long now = (new Date()).getTime();
+        Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()  // Refresh Token은 Access Token과는 다르게, 오직 로그인 유지를 위한 것이므로 중요정보 Claim 없이 만료 시간만 담아준다.
@@ -74,12 +103,7 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
 
-        return TokenDto.builder()
-                .grantType(BEARER_TYPE)
-                .accessToken(accessToken)
-                .accessTokenExpiresIn(accessTokenExpiresIn.getTime())
-                .refreshToken(refreshToken)
-                .build();
+        return refreshToken;
     }
 
     public Authentication getAuthentication(String accessToken) {  // Access Token의 Payload에 저장된 사용자의 아이디와 권한 정보를 토대로 인증하여 Authentication 객체를 만들어 반환하는 메소드

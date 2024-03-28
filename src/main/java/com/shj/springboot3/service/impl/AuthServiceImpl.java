@@ -1,10 +1,11 @@
-package com.shj.springboot3.service;
+package com.shj.springboot3.service.impl;
 
 import com.shj.springboot3.domain.user.User;
 import com.shj.springboot3.domain.user.UserRepository;
 import com.shj.springboot3.dto.user.UserResponseDto;
 import com.shj.springboot3.domain.user.Role;
 import com.shj.springboot3.dto.user.UserSignupRequestDto;
+import com.shj.springboot3.service.AuthService;
 import com.shj.springboot3.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

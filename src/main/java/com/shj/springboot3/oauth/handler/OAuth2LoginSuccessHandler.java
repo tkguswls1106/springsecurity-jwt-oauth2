@@ -36,7 +36,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         try {
             CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
-            TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);  // Access & Refresh 토큰 발행.
+            Long userId = oAuth2User.getUserId();
+            Role role = oAuth2User.getRole();
+
+            TokenDto tokenDto = tokenProvider.generateTokenDto(userId, role);  // Access & Refresh 토큰 발행.
             String accessToken = tokenDto.getAccessToken();
             log.info("발급된 Access Token : {}", accessToken);
             String refreshToken = tokenDto.getRefreshToken();
