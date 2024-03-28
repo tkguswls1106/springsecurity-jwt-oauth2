@@ -34,6 +34,9 @@ public class User extends BaseEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     private SocialType socialType;  // KAKAO, NAVER, GOOGLE
 
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
     @Column(name = "more_info1")
     private String moreInfo1;
     @Column(name = "more_info2")
@@ -61,7 +64,7 @@ public class User extends BaseEntity implements Serializable {
         this.nickname = nickname;
         this.imageUrl = imageUrl;
 
-        // moreInfo들은 null로 들어간다.
+        // refreshToken과 moreInfo들은 null로 들어간다.
     }
 
 
@@ -72,5 +75,8 @@ public class User extends BaseEntity implements Serializable {
         this.moreInfo1 = userSignupRequestdto.getMoreInfo1();
         this.moreInfo2 = userSignupRequestdto.getMoreInfo2();
         this.moreInfo3 = userSignupRequestdto.getMoreInfo3();
+    }
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

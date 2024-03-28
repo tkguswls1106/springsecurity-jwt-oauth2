@@ -27,7 +27,8 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
 
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 360;  // 360분 = 6시간
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 120;  // 120분 = 2시간
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 1440 * 14;  // 1440분 x 14 = 24시간 x 14 = 14일 = 2주
     private final Key key;  // 이 key는 JWT의 토큰 서명(signature)을 생성하고 검증하는 데 사용됨.
 
 
@@ -49,7 +50,8 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
                 .collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
-        Date tokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+        Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
 //        System.out.println(tokenExpiresIn);
 //        // 이것은 원래 'Fri Jul 21 23:25:11 KST 2023'처럼 '로그인한시각+만료시간6시간 = 로그인토큰만료시간'을 콘솔에 출력해주는 코드이다.
 //        // 참고로, 'Fri Jul 21 23:25:11 KST 2023'의 의미는 '요일 월 일 시:분:초 기준시각나라 년도' 이다.
@@ -58,17 +60,25 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
         Long userId = oAuth2User.getUserId();
         String strUserId = String.valueOf(userId);
 
+        // Access Token 생성
         String accessToken = Jwts.builder()
                 .setSubject(strUserId)  // Payload에 String으로 변환해둔 사용자DB의PKid와 권한 정보가 저장되어야만한다. (아이디)
                 .claim(AUTHORITIES_KEY, authorities)  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장되어야만한다. (권한)
-                .setExpiration(tokenExpiresIn)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
+
+        // Refresh Token 생성
+        String refreshToken = Jwts.builder()  // Refresh Token은 Access Token과는 다르게, 오직 로그인 유지를 위한 것이므로 중요정보 Claim 없이 만료 시간만 담아준다.
+                .setExpiration(refreshTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
 
         return TokenDto.builder()
                 .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
-                .tokenExpiresIn(tokenExpiresIn.getTime())
+                .accessTokenExpiresIn(accessTokenExpiresIn.getTime())
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -101,7 +111,7 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
         try {
             // setSigningKey(key)는 JWT의 서명을 확인하는 데 사용되는 key를 설정하는 역할임.
             // parseClaimsJws(auth)은 JWT 문자열(auth)을 구문 분석하고 확인하는 메소드로써,
-            // 토큰의 서명이 유효한 경우, 토큰에서 구문 분석된 클레임을 포함하는 'Jws'(클레임이 포함된 JSON 웹 서명) 개체를 반환하고,
+            // 토큰의 서명이 유효한 경우, 토큰에서 구문 분석된 클레임을 포함하는 'Jwts'(클레임이 포함된 JSON 웹 서명) 개체를 반환하고,
             // 서명이 유효하지 않거나 토큰 형식이 잘못된 경우, JwtException 예외 처리가 발생함.
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;

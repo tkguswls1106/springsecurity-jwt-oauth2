@@ -23,8 +23,10 @@ public class AuthServiceImpl implements AuthService {
         Long userId = SecurityUtil.getCurrentMemberId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자는 존재하지 않습니다."));
-        if(user.getRole().equals(Role.USER) || user.getMoreInfo1() != null || user.getMoreInfo2() != null || user.getMoreInfo3() != null) {
-            throw new RuntimeException("이미 가입완료된 사용자입니다.");
+
+        if(!user.getRole().equals(Role.GUEST)  // Role이 GUEST인 사용자만 이용가능한 api 이다.
+                || user.getMoreInfo1() != null || user.getMoreInfo2() != null || user.getMoreInfo3() != null) {
+            throw new RuntimeException("이미 가입완료 되어있는 사용자입니다.");
         }
 
         user.updateMoreInfo(userSignupRequestDto);

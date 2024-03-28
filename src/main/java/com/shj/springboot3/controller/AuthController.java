@@ -36,9 +36,20 @@ public class AuthController {
     private final AuthService authService;
 
 
+    // - oauth2signup()으로 해당 성공 ResponseEntity를 반환에 성공한다면, 프론트에서는 이미 헤더에 저장해둔 토큰으로 메인 페이지로 이동시키면됨.
+    // 문제점 1. 프론트에서 <a href="/oauth2/authorization/kakao"> 를 어떻게 구현할것인가?
+    // 문제점 2. 토큰 만료의 경우를 TokenProvider에서 말고 처리하는 법은?
+    // 문제점 3. 토큰 만료의 경우를 걸러냈다치고, 이럴때 리프레쉬 토큰을 재설정해서 프론트에 넘겨주는 법은?
+    // 문제점 4. '/oauth2/signup'는 Role.GUEST만, 나머지 api url은 전부 Role.USER 또는 Role.ADMIN 만 사용가능하도록, .requestMatchers 설정하는 법은?
+    // 문제점 5. login api와 signup api의 구분은 정확히 어떻게 할것이며 그러한 플로우는 어떻게 진행할것인가?
     @PostMapping("/oauth2/signup")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다.
-    public ResponseEntity oauth2signup(@RequestBody UserSignupRequestDto userSignupRequestDto) {
+    public ResponseEntity oauth2signup(@RequestBody UserSignupRequestDto userSignupRequestDto) {  // 여기서 Role을 User로 교체해주지 않으면 다른 로그인 필수 api를 사용하지 못한다.
         UserResponseDto userResponseDto = authService.signup(userSignupRequestDto);
         return ResponseData.toResponseEntity(ResponseCode.CREATED_USER, userResponseDto);
+    }
+
+    @GetMapping("/test")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다. (헤더의 토큰을 없애며 테스트 진행하기.)
+    public ResponseEntity test() {
+        return ResponseData.toResponseEntity(ResponseCode.HEALTHY_SUCCESS);
     }
 }
