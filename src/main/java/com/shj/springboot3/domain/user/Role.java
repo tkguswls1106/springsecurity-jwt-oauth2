@@ -1,4 +1,4 @@
-package com.shj.springboot3.oauth;
+package com.shj.springboot3.domain.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,7 @@
 package com.shj.springboot3.jwt;
 
-import com.shj.springboot3.dto.token.TokenDto;
+import com.shj.springboot3.dto.auth.TokenDto;
+import com.shj.springboot3.oauth.CustomOAuth2User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -53,8 +54,12 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
 //        // 이것은 원래 'Fri Jul 21 23:25:11 KST 2023'처럼 '로그인한시각+만료시간6시간 = 로그인토큰만료시간'을 콘솔에 출력해주는 코드이다.
 //        // 참고로, 'Fri Jul 21 23:25:11 KST 2023'의 의미는 '요일 월 일 시:분:초 기준시각나라 년도' 이다.
 
+        CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        Long userId = oAuth2User.getUserId();
+        String strUserId = String.valueOf(userId);
+
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())  // Payload에 String으로 변환해둔 사용자DB의PKid와 권한 정보가 저장되어야만한다. (아이디)
+                .setSubject(strUserId)  // Payload에 String으로 변환해둔 사용자DB의PKid와 권한 정보가 저장되어야만한다. (아이디)
                 .claim(AUTHORITIES_KEY, authorities)  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장되어야만한다. (권한)
                 .setExpiration(tokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
@@ -95,7 +100,7 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
     public boolean validateToken(String token) {  // 토큰의 key서명이 일치하고 유효한지 검사하는 메소드이다. (JWT를 검증하고 처리하는 단계)
         try {
             // setSigningKey(key)는 JWT의 서명을 확인하는 데 사용되는 key를 설정하는 역할임.
-            // parseClaimsJws(token)은 JWT 문자열(token)을 구문 분석하고 확인하는 메소드로써,
+            // parseClaimsJws(auth)은 JWT 문자열(auth)을 구문 분석하고 확인하는 메소드로써,
             // 토큰의 서명이 유효한 경우, 토큰에서 구문 분석된 클레임을 포함하는 'Jws'(클레임이 포함된 JSON 웹 서명) 개체를 반환하고,
             // 서명이 유효하지 않거나 토큰 형식이 잘못된 경우, JwtException 예외 처리가 발생함.
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);

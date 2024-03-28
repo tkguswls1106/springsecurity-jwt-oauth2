@@ -1,5 +1,6 @@
 package com.shj.springboot3.oauth;
 
+import com.shj.springboot3.domain.user.SocialType;
 import com.shj.springboot3.domain.user.User;
 import com.shj.springboot3.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +56,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 attributes,
                 extractAttributes.getNameAttributeKey(),
                 createdUser.getEmail(),
-                createdUser.getRole()
+                createdUser.getRole(),
+                createdUser.getId()
         );
     }
 

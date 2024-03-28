@@ -1,4 +1,4 @@
-package com.shj.springboot3.dto.token;
+package com.shj.springboot3.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

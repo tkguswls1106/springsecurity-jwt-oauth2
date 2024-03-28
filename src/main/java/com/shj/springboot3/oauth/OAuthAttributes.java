@@ -1,5 +1,7 @@
 package com.shj.springboot3.oauth;
 
+import com.shj.springboot3.domain.user.Role;
+import com.shj.springboot3.domain.user.SocialType;
 import com.shj.springboot3.domain.user.User;
 import com.shj.springboot3.oauth.userinfo.GoogleOAuth2UserInfo;
 import com.shj.springboot3.oauth.userinfo.KakaoOAuth2UserInfo;
@@ -7,7 +9,6 @@ import com.shj.springboot3.oauth.userinfo.NaverOAuth2UserInfo;
 import com.shj.springboot3.oauth.userinfo.OAuth2UserInfo;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
 import java.util.UUID;

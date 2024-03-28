@@ -25,6 +25,7 @@ public enum ResponseCode {
     anonymousUser_ERROR(StatusItem.INTERNAL_SERVER_ERROR, MessageItem.anonymousUser_ERROR),
     UNAUTHORIZED_ERROR(StatusItem.UNAUTHORIZED, MessageItem.UNAUTHORIZED),
     FORBIDDEN_ERROR(StatusItem.FORBIDDEN, MessageItem.FORBIDDEN),
+    LOGIN_FAIL(StatusItem.BAD_REQUEST, MessageItem.LOGIN_FAIL),
 
     // ===================== //
     ;

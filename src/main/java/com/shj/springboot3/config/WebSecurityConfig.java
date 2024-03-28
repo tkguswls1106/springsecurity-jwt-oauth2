@@ -47,22 +47,22 @@ public class WebSecurityConfig {  // 스프링 시큐리티 구성요소 설정 
                 })
                 .sessionManagement((sessionManagement) -> {
                     sessionManagement
-                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);  // 세션관리 정책을 STATELESS(세션이 있으면 쓰지도 않고, 없으면 만들지도 않는다)
                 })
 
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers("/**").permitAll()  // 임시 테스팅 용도
-                                // .requestMatchers("/", "/login", "/auth", "/signup").permitAll()
+                                // .requestMatchers("/", "/login", "/oauth2/signup").permitAll()
                                 .anyRequest().authenticated()
                 )
 
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2LoginSuccessHandler)
                         .failureHandler(oAuth2LoginFailureHandler)
-                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
-                                .userService(customOAuth2UserService)))
+                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig  // userInfoEndpoint란, oauth2 로그인 성공 후 설정을 시작한다는 말이다.
+                                .userService(customOAuth2UserService)))  // OAuth2 로그인시 사용자 정보를 가져오는 엔드포인트와 사용자 서비스를 설정.
 
                 .apply(new JwtSecurityConfig(tokenProvider, objectMapper));
                 // JwtSecurityConfig와 같은 보안 구성 클래스는 WebSecurityConfig 클래스 내에서 .apply() 메서드를 통해 명시적으로 적용하기때문에, JwtSecurityConfig에 @Configuration 어노테이션을 붙이지않아도된다.

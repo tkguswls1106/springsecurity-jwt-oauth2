@@ -1,7 +1,7 @@
 package com.shj.springboot3.domain.user;
 
-import com.shj.springboot3.oauth.Role;
-import com.shj.springboot3.oauth.SocialType;
+import com.shj.springboot3.domain.common.BaseEntity;
+import com.shj.springboot3.dto.user.UserSignupRequestDto;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +14,7 @@ import java.io.Serializable;
 
 @Table(name = "user")
 @Entity
-public class User implements Serializable {
+public class User extends BaseEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,15 +34,20 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     private SocialType socialType;  // KAKAO, NAVER, GOOGLE
 
-    private String moreInfo;
+    @Column(name = "more_info1")
+    private String moreInfo1;
+    @Column(name = "more_info2")
+    private String moreInfo2;
+    @Column(name = "more_info3")
+    private String moreInfo3;
 
 
-    @Builder
-    public User(Long id, String email, String nickname) {
-        this.id = id;
-        this.email = email;
-        this.nickname = nickname;
-    }
+//    @Builder
+//    public User(Long id, String email, String nickname) {
+//        this.id = id;
+//        this.email = email;
+//        this.nickname = nickname;
+//    }
 
     @Builder(builderClassName = "UserJoinBuilder", builderMethodName = "UserJoinBuilder")
     public User(String email, Role role, SocialType socialType, String socialId, String nickname, String imageUrl) {
@@ -56,14 +61,16 @@ public class User implements Serializable {
         this.nickname = nickname;
         this.imageUrl = imageUrl;
 
-        // moreInfo는 null로 들어간다.
+        // moreInfo들은 null로 들어간다.
     }
 
 
     public void updateRole() {  // 추가정보 입력후, Role을 GUEST->USER로 업데이트.
         this.role = Role.USER;
     }
-    public void updateMoreInfo(String moreInfo) {
-        this.moreInfo = moreInfo;
+    public void updateMoreInfo(UserSignupRequestDto userSignupRequestdto) {
+        this.moreInfo1 = userSignupRequestdto.getMoreInfo1();
+        this.moreInfo2 = userSignupRequestdto.getMoreInfo2();
+        this.moreInfo3 = userSignupRequestdto.getMoreInfo3();
     }
 }

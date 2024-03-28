@@ -1,10 +1,10 @@
 package com.shj.springboot3.controller;
 
-import com.shj.springboot3.dto.token.TokenDto;
-import com.shj.springboot3.dto.user.*;
+import com.shj.springboot3.dto.user.UserResponseDto;
+import com.shj.springboot3.dto.user.UserSignupRequestDto;
 import com.shj.springboot3.response.ResponseCode;
 import com.shj.springboot3.response.ResponseData;
-import com.shj.springboot3.util.SecurityUtil;
+import com.shj.springboot3.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,10 +33,12 @@ public class AuthController {
     // -> 서비스단의 login 메소드: 결과적으로 'AuthenticationProvider에 파라미터로 넣어준 UsernamePasswordAuthenticationToken 인증토큰객체'와 'DB에서 가져온 UserDetails 객체'에 대하여 사용자 아이디+비밀번호를 일치하는지 체킹함.
     // -> 일치 성공하면 예외처리 발생없이 정상적으로 토큰을 generateTokenDto()메소드로 발행시켜 프론트엔드에게 반환해줌.
 
+    private final AuthService authService;
 
-    @GetMapping("/oauth2/signup")
-    public void oauth2signup() {
-        Long userId = SecurityUtil.getCurrentMemberId();
-        System.out.println("@@@@@@@@@@@@@@@@@@ userId: " + userId + " @@@@@@@@@@@@@@@@@@");
+
+    @PostMapping("/oauth2/signup")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다.
+    public ResponseEntity oauth2signup(@RequestBody UserSignupRequestDto userSignupRequestDto) {
+        UserResponseDto userResponseDto = authService.signup(userSignupRequestDto);
+        return ResponseData.toResponseEntity(ResponseCode.CREATED_USER, userResponseDto);
     }
 }
