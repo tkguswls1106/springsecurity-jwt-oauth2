@@ -1,14 +1,14 @@
 package com.shj.springboot3.controller;
 
 import com.shj.springboot3.dto.auth.SignupResponseDto;
-import com.shj.springboot3.dto.user.UserResponseDto;
+import com.shj.springboot3.dto.auth.TokenDto;
 import com.shj.springboot3.dto.user.UserSignupRequestDto;
 import com.shj.springboot3.response.ResponseCode;
 import com.shj.springboot3.response.ResponseData;
 import com.shj.springboot3.service.AuthService;
+import com.shj.springboot3.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -36,6 +36,7 @@ public class AuthController {
     // -> 일치 성공하면 예외처리 발생없이 정상적으로 토큰을 generateTokenDto()메소드로 발행시켜 프론트엔드에게 반환해줌.
 
     private final AuthService authService;
+    private final TokenService tokenService;
 
     // < OAuth2 로그인 및 회원가입(추가정보입력) 로직 과정 >
     // - 과정 1. 처음 OAuth 소셜 로그인이 성공한다면, 일단 프론트에서 헤더에 Access 토큰을 지니게한뒤에, OAuth2LoginSuccessHandler에서 반환되는 ResponseEntity 내부의 isNewUser 필드의 boolean 결과에 따라 판단함.
@@ -50,13 +51,22 @@ public class AuthController {
     // (O) 문제점 4. '/oauth2/signup'는 Role.GUEST만, 나머지 api url은 전부 Role.USER 또는 Role.ADMIN 만 사용가능하도록, .requestMatchers 설정하는 법은?
     // (O) 문제점 5. login api와 signup api의 구분은 정확히 어떻게 할것이며 그러한 플로우는 어떻게 진행할것인가?
     // 문제점 6. '.requestMatchers("/**").permitAll()' 이거 없이 어떻게 초반 oauth 로그인을 진행할것인가?
-    // 문제점 7. Refresh Token 관련 로직을 마저 구현 완료할것.
+    // (O) 문제점 7. Refresh Token 관련 로직을 마저 구현 완료할것.
+    // 문제점 8. 서버가 분리된 rest api 형식의 OAuth2를 구현 완료할것.
     @PostMapping("/oauth2/signup")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다.
-    public ResponseEntity signup(Authentication authentication, @RequestBody UserSignupRequestDto userSignupRequestDto) {  // 여기서 Role을 USER로 교체해주지 않으면 다른 로그인 필수 api를 사용하지 못한다.
+    public ResponseEntity signup(@RequestBody UserSignupRequestDto userSignupRequestDto) {  // 여기서 Role을 USER로 교체해주지 않으면 다른 로그인 필수 api를 사용하지 못한다.
         SignupResponseDto signupResponseDto = authService.signup(userSignupRequestDto);
         return ResponseData.toResponseEntity(ResponseCode.CREATED_USER, signupResponseDto);
     }
 
+    @GetMapping("/reissue/{userId}")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다. (단, 이 api는 Access Token 말고 Refresh Token으로 헤더에 평소처럼 담아보내면 된다.)
+    public ResponseEntity reissue(@PathVariable Long userId, @RequestHeader(value = "Authorization", required = true) String bearerToken) {  // 여기서 Role을 USER로 교체해주지 않으면 다른 로그인 필수 api를 사용하지 못한다.
+        TokenDto tokenDto = tokenService.reissue(userId, bearerToken);
+        return ResponseData.toResponseEntity(ResponseCode.REISSUE_SUCCESS, tokenDto);
+    }
+
+
+    // Test API
     @GetMapping("/test")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다. (헤더의 토큰을 없애며 테스트 진행하기.)
     public ResponseEntity test() {
         return ResponseData.toResponseEntity(ResponseCode.HEALTHY_SUCCESS);

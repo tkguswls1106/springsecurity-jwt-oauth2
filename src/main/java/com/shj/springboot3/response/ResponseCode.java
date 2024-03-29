@@ -19,6 +19,7 @@ public enum ResponseCode {
     GET_LOGIN(StatusItem.NO_CONTENT, MessageItem.GET_LOGIN),
     UPDATE_PASSWORD(StatusItem.NO_CONTENT, MessageItem.UPDATE_PASSWORD),
     HEALTHY_SUCCESS(StatusItem.OK, MessageItem.HEALTHY_SUCCESS),
+    REISSUE_SUCCESS(StatusItem.OK, MessageItem.REISSUE_SUCCESS),
 
     // 기타 실패 응답
     INTERNAL_SERVER_ERROR(StatusItem.INTERNAL_SERVER_ERROR, MessageItem.INTERNAL_SERVER_ERROR),

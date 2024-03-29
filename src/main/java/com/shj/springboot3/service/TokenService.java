@@ -5,7 +5,6 @@ import com.shj.springboot3.dto.auth.TokenDto;
 
 public interface TokenService {
 
-//    public TokenDto loginTokenDto(Long userId, Role role);
-    public TokenDto generateAccessTokenByRefreshToken(Long userId, Role role, String refreshToken);
+    TokenDto reissue(Long userId, String bearerToken);
     void updateRefreshToken(Long userId, String refreshToken);
 }

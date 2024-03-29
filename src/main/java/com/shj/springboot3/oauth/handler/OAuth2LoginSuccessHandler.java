@@ -47,7 +47,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             String refreshToken = tokenDto.getRefreshToken();
             log.info("발급된 Refresh Token : {}", refreshToken);
 
-            // 로그인에 성공했으므로, 사용자 DB에 Refresh Token 저장.
+            // 로그인에 성공했으므로, 사용자 DB에 Refresh Token 저장(있다면 업데이트).
             tokenService.updateRefreshToken(userId, refreshToken);
 
             response.setStatus(HttpServletResponse.SC_OK);

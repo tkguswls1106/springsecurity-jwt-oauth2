@@ -98,7 +98,11 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
         Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
 
         // Refresh Token 생성
-        String refreshToken = Jwts.builder()  // Refresh Token은 Access Token과는 다르게, 오직 로그인 유지를 위한 것이므로 중요정보 Claim 없이 만료 시간만 담아준다.
+        String refreshToken = Jwts.builder()  // Refresh Token은 Access Token과는 다르게, 오직 로그인 유지를 위한 것이므로 중요정보 Claim 없이 만료 시간만 담아줘도 된다.
+
+                .setSubject("0")  // reissue 시에, TokenProvider의 getAuthentication에서 권한 정보에 대해 null 검사를 할때 피하기위해서 작성해주었다. 그렇기에 아무것이나 작성해주어도 상관없다.
+                .claim(AUTHORITIES_KEY, "ROLE_GUEST") // reissue 시에, TokenProvider의 getAuthentication에서 권한 정보에 대해 null 검사를 할때 피하기위해서 작성해주었다. 그렇기에 아무 권한이나 작성해주어도 상관없다.
+
                 .setExpiration(refreshTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
