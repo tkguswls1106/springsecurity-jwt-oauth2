@@ -51,7 +51,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             OAuthLoginResponseDto oAuthLoginResponseDto = new OAuthLoginResponseDto();
             oAuthLoginResponseDto.setTokenDto(tokenDto);
 
-            if(oAuth2User.getRole().equals(Role.GUEST)) {  // User의 Role이 GUEST일 경우, 처음 요청한 회원이므로, 회원가입 페이지로 리다이렉트 시켜야함을 프론트에 전달.
+            if(oAuth2User.getRole().equals(Role.ROLE_GUEST)) {  // User의 Role이 GUEST일 경우, 처음 요청한 회원이므로, 회원가입 페이지로 리다이렉트 시켜야함을 프론트에 전달.
                 oAuthLoginResponseDto.setIsNewUser(true);
                 oAuthLoginResponseDto.setRedirectMessage("신규 회원 입니다. JWT 헤더를 가진채로, 추가정보 입력을 위한 회원가입 페이지로 리다이렉트 시켜주세요.");
             }

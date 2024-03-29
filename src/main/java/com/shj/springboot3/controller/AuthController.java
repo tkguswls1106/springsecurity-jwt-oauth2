@@ -1,5 +1,6 @@
 package com.shj.springboot3.controller;
 
+import com.shj.springboot3.dto.auth.SignupResponseDto;
 import com.shj.springboot3.dto.user.UserResponseDto;
 import com.shj.springboot3.dto.user.UserSignupRequestDto;
 import com.shj.springboot3.response.ResponseCode;
@@ -7,6 +8,7 @@ import com.shj.springboot3.response.ResponseData;
 import com.shj.springboot3.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -40,13 +42,13 @@ public class AuthController {
     // 문제점 1. 프론트에서 <a href="/oauth2/authorization/kakao"> 를 어떻게 구현할것인가?
     // 문제점 2. 토큰 만료의 경우를 TokenProvider에서 말고 다른곳에서 처리하는 법은? (JwtAuthenticationEntryPoint 대신 JwtExceptionFilter 로 가능할지도)
     // 문제점 3. 토큰 만료의 경우를 걸러냈다치고, 이럴때 리프레쉬 토큰을 재설정해서 프론트에 넘겨주는 법은?
-    // 문제점 4. '/oauth2/signup'는 Role.GUEST만, 나머지 api url은 전부 Role.USER 또는 Role.ADMIN 만 사용가능하도록, .requestMatchers 설정하는 법은?
+    // (O) 문제점 4. '/oauth2/signup'는 Role.GUEST만, 나머지 api url은 전부 Role.USER 또는 Role.ADMIN 만 사용가능하도록, .requestMatchers 설정하는 법은?
     // 문제점 5. login api와 signup api의 구분은 정확히 어떻게 할것이며 그러한 플로우는 어떻게 진행할것인가?
     // 문제점 6. '.requestMatchers("/**").permitAll()' 이거 없이 어떻게 초반 oauth 로그인을 진행할것인가?
     @PostMapping("/oauth2/signup")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다.
-    public ResponseEntity oauth2signup(@RequestBody UserSignupRequestDto userSignupRequestDto) {  // 여기서 Role을 User로 교체해주지 않으면 다른 로그인 필수 api를 사용하지 못한다.
-        UserResponseDto userResponseDto = authService.signup(userSignupRequestDto);
-        return ResponseData.toResponseEntity(ResponseCode.CREATED_USER, userResponseDto);
+    public ResponseEntity signup(Authentication authentication, @RequestBody UserSignupRequestDto userSignupRequestDto) {  // 여기서 Role을 USER로 교체해주지 않으면 다른 로그인 필수 api를 사용하지 못한다.
+        SignupResponseDto signupResponseDto = authService.signup(userSignupRequestDto);
+        return ResponseData.toResponseEntity(ResponseCode.CREATED_USER, signupResponseDto);
     }
 
     @GetMapping("/test")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다. (헤더의 토큰을 없애며 테스트 진행하기.)

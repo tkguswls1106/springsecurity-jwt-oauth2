@@ -51,10 +51,17 @@ public class SecurityConfig {  // 스프링 시큐리티 구성요소 설정 클
 
                 .authorizeHttpRequests(authorizeRequests -> {
                     authorizeRequests
-                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                            // 설정 시에, 구체적인 경로인 작은 범위부터 먼저 위에 오고, 그보다 큰 범위의 경로가 아래에 오도록 작성해야한다. 이는 시큐리티가 위에서 아래로 해석을 하기 때문이다.
+                            // 아마도 위의 것부터 적용이 먼저되는듯 하다.
+
+                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // 이 구문은 주로 CORS 사전 요청 처리를 위해 사용되므로, 보안 설정의 초기 부분에 위치하는 것이 일반적이다.
+                            .requestMatchers(HttpMethod.POST, "/oauth2/signup").hasAuthority("ROLE_GUEST")  // 참고로 이는 DB뿐만이 아니라, 헤더의 jwt 토큰에 등록해둔 권한도 바꾸어 재발급 받아야 한다.
+
 //                            .requestMatchers("/**").permitAll()  // 임시 테스팅 용도
                             .requestMatchers("/", "/error", "/favicon.ico", "/login").permitAll()
-                            .anyRequest().authenticated();
+
+                            .anyRequest().hasAnyAuthority("ROLE_USER", "ROLE_ADMIN");  // permit 지정한 경로들 외에는 전부 USER나 ADMIN 권한이 있어야지 url을 이용 가능하다. (GUEST 불가능)
+//                            .anyRequest().authenticated();  // 위의 permitAll()에 등록된 url들을 제외한 나머지 모든 url들에 대해 jwt 인증이 필요함.
                 })
 
                 .exceptionHandling(exceptionHandling -> {

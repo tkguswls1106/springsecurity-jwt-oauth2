@@ -68,8 +68,8 @@ public class User extends BaseEntity implements Serializable {
     }
 
 
-    public void updateRole() {  // 추가정보 입력후, Role을 GUEST->USER로 업데이트.
-        this.role = Role.USER;
+    public void updateRole() {  // 추가정보 입력후, Role을 GUEST->USER로 업데이트. (헤더의 jwt 토큰에 등록해둔 권한도 수정해야하기에, Access 토큰도 따로 재발급해야함.)
+        this.role = Role.ROLE_USER;
     }
     public void updateMoreInfo(UserSignupRequestDto userSignupRequestdto) {
         this.moreInfo1 = userSignupRequestdto.getMoreInfo1();

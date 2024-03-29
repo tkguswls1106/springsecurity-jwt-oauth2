@@ -62,7 +62,7 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
                 .build();
     }
 
-    // Access 토큰이 만료된 경우, Refresh Token으로 Access Token 재발급하기
+    // Access 토큰이 만료된 경우, Refresh Token으로 Access Token 재발급하기 (또는 signup으로 인해 헤더의 jwt 토큰에 등록해둔 권한도 수정해야할때 활용할 것임.)
     public TokenDto generateAccessTokenByRefreshToken(Long userId, Role role, String refreshToken) {
         String accessToken = generateAccessToken(userId, role);
 
@@ -84,7 +84,7 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
         // Access Token 생성
         String accessToken = Jwts.builder()
                 .setSubject(strUserId)  // Payload에 String으로 변환해둔 사용자DB의PKid와 권한 정보가 저장되어야만한다. (아이디)
-                .claim(AUTHORITIES_KEY, role.getKey())  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장되어야만한다. (권한)
+                .claim(AUTHORITIES_KEY, role.name())  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장되어야만한다. (권한)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
@@ -159,3 +159,12 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
         }
     }
 }
+
+/*
+- Access Token 만료시, 이를 Refresh Token으로 재발급 받는 과정 -
+1. 프론트에서 로그인하면, 백엔드에서 Access 토큰과 Refresh 토큰을 발급해서 프론트에 전달한다. Refresh 토큰은 DB에도 저장해둔다.
+2. 프론트에서는 백엔드에 api 요청을 보낼 때마다 헤더에 Access 토큰을 담아서 보낸다.
+3. Access 토큰이 만료되었으면, Access 토큰은 헤더에 담고 Refresh 토큰은 RequestBody에 담아 보내서 토큰 재발급을 요청한다.
+4. 헤더의 Access 토큰이 기간만 만료된 유효한 액세스 토큰이고, RequestBody로 받은 Refresh 토큰이 해당 로그인 유저의 DB에 저장된 Refresh 토큰과 값이 같으면서 유효한 토큰이면, Access 토큰을 재발급 받는다.
+5. DB에서 조회결과, 만약 유효하지않은 만료된 Refresh 토큰이라면, 재로그인 요청을 받는다.
+ */

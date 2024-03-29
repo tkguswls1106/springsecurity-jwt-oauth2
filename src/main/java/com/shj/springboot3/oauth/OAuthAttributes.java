@@ -82,7 +82,7 @@ public class OAuthAttributes {
         return User.UserJoinBuilder()
                 // CustomOAuth2User에서 언급한대로, email과 role도 사용하기 위해 추가하여 빌드함.
                 .email(UUID.randomUUID() + "@socialUser.com")  // email은 JWT Token을 발급하기 위한 용도뿐이므로, UUID를 사용하여 임의로 설정함.
-                .role(Role.GUEST)
+                .role(Role.ROLE_GUEST)
 
                 .socialType(socialType)
 
