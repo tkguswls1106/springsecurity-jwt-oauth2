@@ -22,14 +22,6 @@ public class JwtFilter extends OncePerRequestFilter {  // 커스텀 필터 클�
     private final TokenProvider tokenProvider;  // @RequiredArgsConstructor로 의존DI주입으로, JwtFilter(TokenProvider tokenProvider){} 생성자를 자동 생성해줌.
 
 
-    private String resolveToken(HttpServletRequest request) {  // HttpServletRequest는 HTTP 요청 정보를 캡슐화하는 객체이다. 이 객체는 클라이언트에서 서버로 전송된 요청 메시지의 내용과 속성을 확인하고 수정할 수 있다.
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {  // 추출된 헤더값이 null이 아닌가 && "Bearer "로 시작하는가 ("Bearer " 다음에 실제 토큰이 오는 것이 관례임.)
-            return bearerToken.substring(7);  // 토큰이 유효하다면, 앞부분인 "Bearer "을 제외하여 7인덱스부터 끝까지인 실제 토큰 문자열을 반환함.
-        }
-        return null;
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String jwt = resolveToken(request);  // 토큰값 문자열 리턴
@@ -40,5 +32,13 @@ public class JwtFilter extends OncePerRequestFilter {  // 커스텀 필터 클�
         }
 
         filterChain.doFilter(request, response);  // 현재 필터의 작업이 끝난 후, 다음 필터로 HTTP 요청을 전달함.
+    }
+
+    private String resolveToken(HttpServletRequest request) {  // HttpServletRequest는 HTTP 요청 정보를 캡슐화하는 객체이다. 이 객체는 클라이언트에서 서버로 전송된 요청 메시지의 내용과 속성을 확인하고 수정할 수 있다.
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {  // 추출된 헤더값이 null이 아닌가 && "Bearer "로 시작하는가 ("Bearer " 다음에 실제 토큰이 오는 것이 관례임.)
+            return bearerToken.substring(7);  // 토큰이 유효하다면, 앞부분인 "Bearer "을 제외하여 7인덱스부터 끝까지인 실제 토큰 문자열을 반환함.
+        }
+        return null;
     }
 }
