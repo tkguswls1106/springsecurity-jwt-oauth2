@@ -40,8 +40,8 @@ public class AuthController {
 
     // - oauth2signup()으로 해당 성공 ResponseEntity를 반환에 성공한다면, 프론트에서는 이미 헤더에 저장해둔 토큰으로 메인 페이지로 이동시키면됨.
     // 문제점 1. 프론트에서 <a href="/oauth2/authorization/kakao"> 를 어떻게 구현할것인가?
-    // 문제점 2. 토큰 만료의 경우를 TokenProvider에서 말고 다른곳에서 처리하는 법은? (JwtAuthenticationEntryPoint 대신 JwtExceptionFilter 로 가능할지도)
-    // 문제점 3. 토큰 만료의 경우를 걸러냈다치고, 이럴때 리프레쉬 토큰을 재설정해서 프론트에 넘겨주는 법은?
+    // (O) 문제점 2. 토큰 만료의 경우를 TokenProvider에서 말고 다른곳에서 처리하는 법은? (JwtAuthenticationEntryPoint 대신 JwtExceptionFilter 로 가능할지도)
+    // (O) 문제점 3. 토큰 만료의 경우를 걸러냈다치고, 이럴때 리프레쉬 토큰을 재설정해서 프론트에 넘겨주는 법은?
     // (O) 문제점 4. '/oauth2/signup'는 Role.GUEST만, 나머지 api url은 전부 Role.USER 또는 Role.ADMIN 만 사용가능하도록, .requestMatchers 설정하는 법은?
     // 문제점 5. login api와 signup api의 구분은 정확히 어떻게 할것이며 그러한 플로우는 어떻게 진행할것인가?
     // 문제점 6. '.requestMatchers("/**").permitAll()' 이거 없이 어떻게 초반 oauth 로그인을 진행할것인가?
