@@ -7,6 +7,7 @@ public class MessageItem {
 
     public static final String UNAUTHORIZED = "ERROR - Unauthorized 에러";
     public static final String FORBIDDEN = "ERROR - Forbidden 에러";
+    public static final String TOKEN_EXPIRED = "ERROR - JWT 토큰 만료 에러";
 
     public static final String CREATED_USER = "SUCCESS - 회원 가입 성공";
     public static final String READ_USER = "SUCCESS - 회원 정보 조회 성공";
