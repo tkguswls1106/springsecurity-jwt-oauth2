@@ -7,4 +7,5 @@ public interface TokenService {
 
 //    public TokenDto loginTokenDto(Long userId, Role role);
     public TokenDto generateAccessTokenByRefreshToken(Long userId, Role role, String refreshToken);
+    void updateRefreshToken(Long userId, String refreshToken);
 }

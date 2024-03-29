@@ -9,6 +9,7 @@ import com.shj.springboot3.domain.user.Role;
 import com.shj.springboot3.dto.auth.OAuthLoginResponseDto;
 import com.shj.springboot3.response.ResponseCode;
 import com.shj.springboot3.response.ResponseData;
+import com.shj.springboot3.service.TokenService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,6 +28,7 @@ import java.io.IOException;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final TokenProvider tokenProvider;
+    private final TokenService tokenService;
 
 
     @Override
@@ -44,6 +46,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             log.info("발급된 Access Token : {}", accessToken);
             String refreshToken = tokenDto.getRefreshToken();
             log.info("발급된 Refresh Token : {}", refreshToken);
+
+            // 로그인에 성공했으므로, 사용자 DB에 Refresh Token 저장.
+            tokenService.updateRefreshToken(userId, refreshToken);
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json;charset=UTF-8");

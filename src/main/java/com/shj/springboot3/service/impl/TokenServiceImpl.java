@@ -1,6 +1,7 @@
 package com.shj.springboot3.service.impl;
 
 import com.shj.springboot3.domain.user.Role;
+import com.shj.springboot3.domain.user.User;
 import com.shj.springboot3.domain.user.UserRepository;
 import com.shj.springboot3.dto.auth.TokenDto;
 import com.shj.springboot3.jwt.TokenProvider;
@@ -30,5 +31,13 @@ public class TokenServiceImpl implements TokenService {
 
         TokenDto tokenDto = tokenProvider.generateAccessTokenByRefreshToken(userId, role, refreshToken);
         return tokenDto;
+    }
+
+    @Transactional
+    @Override
+    public void updateRefreshToken(Long userId, String refreshToken) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자는 존재하지 않습니다."));
+        user.updateRefreshToken(refreshToken);
     }
 }
