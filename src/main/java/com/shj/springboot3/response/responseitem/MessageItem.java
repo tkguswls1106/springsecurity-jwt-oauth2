@@ -3,7 +3,7 @@ package com.shj.springboot3.response.responseitem;
 public class MessageItem {
     public static final String LOGIN_SUCCESS = "SUCCESS - 로그인 성공";
     public static final String UPDATE_PASSWORD = "SUCCESS - 비밀번호 수정 성공";
-    public static final String LOGIN_FAIL = "SUCCESS - 로그인 실패";
+    public static final String LOGIN_FAIL = "ERROR - 로그인 실패";
 
     public static final String UNAUTHORIZED = "ERROR - Unauthorized 에러";
     public static final String FORBIDDEN = "ERROR - Forbidden 에러";
