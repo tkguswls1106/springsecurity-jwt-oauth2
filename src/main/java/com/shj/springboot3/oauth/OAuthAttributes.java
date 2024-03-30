@@ -3,10 +3,7 @@ package com.shj.springboot3.oauth;
 import com.shj.springboot3.domain.user.Role;
 import com.shj.springboot3.domain.user.SocialType;
 import com.shj.springboot3.domain.user.User;
-import com.shj.springboot3.oauth.userinfo.GoogleOAuth2UserInfo;
-import com.shj.springboot3.oauth.userinfo.KakaoOAuth2UserInfo;
-import com.shj.springboot3.oauth.userinfo.NaverOAuth2UserInfo;
-import com.shj.springboot3.oauth.userinfo.OAuth2UserInfo;
+import com.shj.springboot3.oauth.userinfo.*;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -45,8 +42,11 @@ public class OAuthAttributes {
         if (socialType == SocialType.KAKAO) {
             return ofKakao(userNameAttributeName, attributes);
         }
+        if (socialType == SocialType.GITHUB) {
+            return ofGithub(userNameAttributeName, attributes);
+        }
 //        if (socialType == SocialType.GOOGLE) {
-//            return ofKakao(userNameAttributeName, attributes);
+//            return ofGoogle(userNameAttributeName, attributes);
 //        }
         return ofGoogle(userNameAttributeName, attributes);
     }
@@ -69,6 +69,13 @@ public class OAuthAttributes {
         return OAuthAttributes.builder()
                 .nameAttributeKey(userNameAttributeName)
                 .oauth2UserInfo(new NaverOAuth2UserInfo(attributes))
+                .build();
+    }
+
+    public static OAuthAttributes ofGithub(String userNameAttributeName, Map<String, Object> attributes) {
+        return OAuthAttributes.builder()
+                .nameAttributeKey(userNameAttributeName)
+                .oauth2UserInfo(new GithubOAuth2UserInfo(attributes))
                 .build();
     }
 
