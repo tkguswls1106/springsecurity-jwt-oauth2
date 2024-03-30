@@ -1,4 +1,4 @@
-package com.shj.springboot3.dto.token;
+package com.shj.springboot3.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,5 +13,6 @@ public class TokenDto {
 
     private String grantType;
     private String accessToken;
-    private Long tokenExpiresIn;
+    private Long accessTokenExpiresIn;
+    private String refreshToken;
 }

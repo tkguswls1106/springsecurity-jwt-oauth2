@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler {  // 참고로 Filter는 DispacherServlet보다도 더 앞단에 위치하여, Filter에서 throw된 에러는 ExceptionHandler가 잡아내지 못한다.
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity handleException(Exception ex) {

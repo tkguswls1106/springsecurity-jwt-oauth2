@@ -1,6 +1,7 @@
 package com.shj.springboot3.jwt;
 
-import com.shj.springboot3.dto.token.TokenDto;
+import com.shj.springboot3.domain.user.Role;
+import com.shj.springboot3.dto.auth.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -26,7 +27,8 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
 
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 360;  // 360분 = 6시간
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 120;  // 120분 = 2시간
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 1440 * 14;  // 1440분 x 14 = 24시간 x 14 = 14일 = 2주
     private final Key key;  // 이 key는 JWT의 토큰 서명(signature)을 생성하고 검증하는 데 사용됨.
 
 
@@ -37,34 +39,70 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
     }
 
 
-    // 토큰 생성
-    public TokenDto generateTokenDto(Authentication authentication) {  // 파라미터로 전달해주는 authentication은 현재 인증 성공한 사용자를 나타내는 Authentication 객체이다.
+    // 전체 토큰 새로 생성
+    public TokenDto generateTokenDto(Long userId, Role role) {  // 파라미터로 전달해주는 authentication은 현재 인증 성공한 사용자를 나타내는 Authentication 객체이다.
         // (참고로 이 메소드의 파라미터 인증객체의 name 안에는 로그인계정아이디가 아닌, CustomUserDetailsService의 createUserDetails메소드에서 진행하여 나온 String으로 변환된 사용자DB의PKid가 들어있다.)
 
         // 사용자의 권한(authority) 정보를 문자열로 변환하는 부분임.
         // 예를 들어, 사용자가 "ROLE_USER"와 "ROLE_ADMIN" 두 가지 권한을 가지고 있다면, 위 코드는 "ROLE_USER,ROLE_ADMIN"과 같은 문자열을 생성함.
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+//        String authorities = authentication.getAuthorities().stream()
+//                .map(GrantedAuthority::getAuthority)
+//                .collect(Collectors.joining(","));
+        // 어차피 권한을 하나씩밖에 안넣을것이므로, 위의 것 말고 더욱 간단하게 Role로 구성하여 코드를 바꿨음.
 
-        long now = (new Date()).getTime();
-        Date tokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
-//        System.out.println(tokenExpiresIn);
-//        // 이것은 원래 'Fri Jul 21 23:25:11 KST 2023'처럼 '로그인한시각+만료시간6시간 = 로그인토큰만료시간'을 콘솔에 출력해주는 코드이다.
-//        // 참고로, 'Fri Jul 21 23:25:11 KST 2023'의 의미는 '요일 월 일 시:분:초 기준시각나라 년도' 이다.
-
-        String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())  // Payload에 String으로 변환해둔 사용자DB의PKid와 권한 정보가 저장되어야만한다. (아이디)
-                .claim(AUTHORITIES_KEY, authorities)  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장되어야만한다. (권한)
-                .setExpiration(tokenExpiresIn)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
+        String accessToken = generateAccessToken(userId, role);
+        String refreshToken = generateRefreshToken();
 
         return TokenDto.builder()
                 .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
-                .tokenExpiresIn(tokenExpiresIn.getTime())
+                .accessTokenExpiresIn(parseClaims(accessToken).getExpiration().getTime())
+                .refreshToken(refreshToken)
                 .build();
+    }
+
+    // Access 토큰이 만료된 경우, Refresh Token으로 Access Token 재발급하기 (또는 signup으로 인해 헤더의 jwt 토큰에 등록해둔 권한도 수정해야할때 활용할 것임.)
+    public TokenDto generateAccessTokenByRefreshToken(Long userId, Role role, String refreshToken) {
+        String accessToken = generateAccessToken(userId, role);
+
+        return TokenDto.builder()
+                .grantType(BEARER_TYPE)
+                .accessToken(accessToken)
+                .accessTokenExpiresIn(parseClaims(accessToken).getExpiration().getTime())
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    // Access Token 생성 후 반환하는 메소드
+    public String generateAccessToken(Long userId, Role role) {
+        long now = (new Date()).getTime();
+        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+
+        String strUserId = String.valueOf(userId);
+
+        // Access Token 생성
+        String accessToken = Jwts.builder()
+                .setSubject(strUserId)  // Payload에 String으로 변환해둔 사용자DB의PKid와 권한 정보가 저장되어야만한다. (아이디)
+                .claim(AUTHORITIES_KEY, role.name())  // Access Token은 Refresh Token과는 다르게, Payload에 사용자의 아이디와 권한 정보가 저장되어야만한다. (권한)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
+
+        return accessToken;
+    }
+
+    // Refresh Token 생성 후 반환하는 메소드
+    public String generateRefreshToken() {
+        long now = (new Date()).getTime();
+        Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
+
+        // Refresh Token 생성
+        String refreshToken = Jwts.builder()  // Refresh Token은 Access Token과는 다르게, 오직 재발급(로그인 유지)를 위한 것이므로 중요정보 Claim 없이 만료 시간만 담아줘도 된다.
+                .setExpiration(refreshTokenExpiresIn)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
+
+        return refreshToken;
     }
 
     public Authentication getAuthentication(String accessToken) {  // Access Token의 Payload에 저장된 사용자의 아이디와 권한 정보를 토대로 인증하여 Authentication 객체를 만들어 반환하는 메소드
@@ -95,15 +133,16 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
     public boolean validateToken(String token) {  // 토큰의 key서명이 일치하고 유효한지 검사하는 메소드이다. (JWT를 검증하고 처리하는 단계)
         try {
             // setSigningKey(key)는 JWT의 서명을 확인하는 데 사용되는 key를 설정하는 역할임.
-            // parseClaimsJws(token)은 JWT 문자열(token)을 구문 분석하고 확인하는 메소드로써,
-            // 토큰의 서명이 유효한 경우, 토큰에서 구문 분석된 클레임을 포함하는 'Jws'(클레임이 포함된 JSON 웹 서명) 개체를 반환하고,
+            // parseClaimsJws(auth)은 JWT 문자열(auth)을 구문 분석하고 확인하는 메소드로써,
+            // 토큰의 서명이 유효한 경우, 토큰에서 구문 분석된 클레임을 포함하는 'Jwts'(클레임이 포함된 JSON 웹 서명) 개체를 반환하고,
             // 서명이 유효하지 않거나 토큰 형식이 잘못된 경우, JwtException 예외 처리가 발생함.
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
-        } catch (ExpiredJwtException e) {
+        } catch (ExpiredJwtException e) {  // 참고로 ExpiredJwtException은 throw 할 때 파라미터가 필요하기에, JwtExpiredException을 새로 만들어서 throw를 대신 구현하는것도 좋다.
             log.info("만료된 JWT 토큰입니다.");
+            throw new JwtException("토큰 만료 - ExpiredJwtException");
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException e) {
@@ -120,3 +159,14 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
         }
     }
 }
+
+/*
+- Access Token 만료시, 이를 Refresh Token으로 재발급 받는 과정 -
+1. 프론트에서 로그인하면, 백엔드에서 Access 토큰과 Refresh 토큰을 발급해서 프론트에 전달한다. Refresh 토큰은 DB에도 저장해둔다.
+2. 프론트에서는 백엔드에 api 요청을 보낼 때마다 헤더에 Access 토큰을 담아서 보낸다.
+3. Access 토큰이 만료되었다는 에러응답을 백엔드로부터 받았다면, 기존의 Access 토큰과 Refresh 토큰을 dto에 담아 백엔드에게 보내서 토큰 재발급을 요청한다. (이때 헤더에 토큰은 필요없다.)
+4. 전달받은 Refresh 토큰의 유효성을 검사한다.
+5. 전달받은 Access 토큰에서 userId를 꺼내서 DB에 사용자를 검색하고, 해당 사용자의 Refresh 토큰이 전달받은 Refresh 토큰과 일치함을 검사한다.
+6-1. 만약 위의 두 검사가 모두 통과된다면, Access 토큰을 재발급 해준다.
+6-2. 만약 위의 두 검사 중에서 하나라도 통과되지 못한다면, 재발급이 안되고 재로그인을 해야한다.
+ */

@@ -1,5 +1,7 @@
 package com.shj.springboot3.domain.user;
 
+import com.shj.springboot3.domain.common.BaseEntity;
+import com.shj.springboot3.dto.user.UserSignupRequestDto;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,61 +14,71 @@ import java.io.Serializable;
 
 @Table(name = "user")
 @Entity
-public class User implements Serializable {
+public class User extends BaseEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
 
-    @Column(name = "login_id", unique = true)
-    private String loginId;
+    @Column(name = "email", unique = true)
+    private String email;
 
-    @Column(name = "first_password")
-    private String firstPw;
-
-    @Column(name = "username")
-    private String username;
+    private String socialId;
+    private String nickname;
+    private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    private Authority authority;
+    private Role role;
+
+    @Enumerated(EnumType.STRING)
+    private SocialType socialType;  // KAKAO, NAVER, GOOGLE
+
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
+    @Column(name = "more_info1")
+    private String moreInfo1;
+    @Column(name = "more_info2")
+    private String moreInfo2;
+    @Column(name = "more_info3")
+    private String moreInfo3;
 
 
-    @Builder
-    public User(Long id, String loginId, String username) {
-        this.id = id;
-        this.loginId = loginId;
-        this.username = username;
-    }
+//    @Builder
+//    public User(Long id, String email, String nickname) {
+//        this.id = id;
+//        this.email = email;
+//        this.nickname = nickname;
+//    }
 
     @Builder(builderClassName = "UserJoinBuilder", builderMethodName = "UserJoinBuilder")
-    public User(String loginId, String firstPw, String username, Authority authority) {
+    public User(String email, Role role, SocialType socialType, String socialId, String nickname, String imageUrl) {
         // 이 빌더는 사용자 회원가입때만 사용할 용도
-        this.loginId = loginId;
-        this.firstPw = firstPw;
-        this.username = username;
-        this.authority = authority;
-    }
+        this.email = email;
+        this.role = role;
 
-    @Builder(builderClassName = "UserUpdatePwBuilder", builderMethodName = "UserUpdatePwBuilder")
-    public User(String loginId, String newFirstPw) {
-        // 이 빌더는 사용자 1차비밀번호 수정때만 사용할 용도
-        this.loginId = loginId;
-        this.firstPw = newFirstPw;
-    }
+        this.socialType = socialType;
 
-    @Builder(builderClassName = "UserUpdateNameBuilder", builderMethodName = "UserUpdateNameBuilder")
-    public User(String username) {
-        // 이 빌더는 사용자 이름 수정때만 사용할 용도
-        this.username = username;
+        this.socialId = socialId;
+        this.nickname = nickname;
+        this.imageUrl = imageUrl;
+
+        // refreshToken과 moreInfo들은 null로 들어간다.
     }
 
 
-    // 수정(업데이트) 기능
-    public void updateFirstPw(String newFirstPw) {  // 1차 패스워드 변경 기능
-        this.firstPw = newFirstPw;
+    public void updateRole() {  // 추가정보 입력후, Role을 GUEST->USER로 업데이트. (헤더의 jwt 토큰에 등록해둔 권한도 수정해야하기에, Access 토큰도 따로 재발급해야함.)
+        this.role = Role.ROLE_USER;
     }
-    public void updateUsername(String username) {  // 사용자이름 변경 기능
-        this.username = username;
+
+    public void updateMoreInfo(UserSignupRequestDto userSignupRequestdto) {
+        this.moreInfo1 = userSignupRequestdto.getMoreInfo1();
+        this.moreInfo2 = userSignupRequestdto.getMoreInfo2();
+        this.moreInfo3 = userSignupRequestdto.getMoreInfo3();
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

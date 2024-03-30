@@ -19,12 +19,15 @@ public enum ResponseCode {
     GET_LOGIN(StatusItem.NO_CONTENT, MessageItem.GET_LOGIN),
     UPDATE_PASSWORD(StatusItem.NO_CONTENT, MessageItem.UPDATE_PASSWORD),
     HEALTHY_SUCCESS(StatusItem.OK, MessageItem.HEALTHY_SUCCESS),
+    REISSUE_SUCCESS(StatusItem.OK, MessageItem.REISSUE_SUCCESS),
 
     // 기타 실패 응답
     INTERNAL_SERVER_ERROR(StatusItem.INTERNAL_SERVER_ERROR, MessageItem.INTERNAL_SERVER_ERROR),
     anonymousUser_ERROR(StatusItem.INTERNAL_SERVER_ERROR, MessageItem.anonymousUser_ERROR),
     UNAUTHORIZED_ERROR(StatusItem.UNAUTHORIZED, MessageItem.UNAUTHORIZED),
     FORBIDDEN_ERROR(StatusItem.FORBIDDEN, MessageItem.FORBIDDEN),
+    LOGIN_FAIL(StatusItem.BAD_REQUEST, MessageItem.LOGIN_FAIL),
+    TOKEN_EXPIRED(StatusItem.UNAUTHORIZED, MessageItem.TOKEN_EXPIRED),
 
     // ===================== //
     ;
