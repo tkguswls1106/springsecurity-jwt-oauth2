@@ -1,5 +1,6 @@
 package com.shj.springboot3.controller;
 
+import com.shj.springboot3.dto.auth.ReissueRequestDto;
 import com.shj.springboot3.dto.auth.SignupResponseDto;
 import com.shj.springboot3.dto.auth.TokenDto;
 import com.shj.springboot3.dto.user.UserSignupRequestDto;
@@ -56,12 +57,12 @@ public class AuthController {
     @PostMapping("/oauth2/signup")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다.
     public ResponseEntity signup(@RequestBody UserSignupRequestDto userSignupRequestDto) {  // 여기서 Role을 USER로 교체해주지 않으면 다른 로그인 필수 api를 사용하지 못한다.
         SignupResponseDto signupResponseDto = authService.signup(userSignupRequestDto);
-        return ResponseData.toResponseEntity(ResponseCode.CREATED_USER, signupResponseDto);
+        return ResponseData.toResponseEntity(ResponseCode.CREATED_USER, signupResponseDto);  // 이 reponseDto 내에 새로운 JWT access 토큰이 들어있다. 이후 앞으로는 이걸로 헤더에 장착해야함.
     }
 
-    @GetMapping("/reissue/{userId}")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다. (단, 이 api는 Access Token 말고 Refresh Token으로 헤더에 평소처럼 담아보내면 된다.)
-    public ResponseEntity reissue(@PathVariable Long userId, @RequestHeader(value = "Authorization", required = true) String bearerToken) {  // 여기서 Role을 USER로 교체해주지 않으면 다른 로그인 필수 api를 사용하지 못한다.
-        TokenDto tokenDto = tokenService.reissue(userId, bearerToken);
+    @PostMapping("/reissue")  // 이 api는 헤더에 JWT토큰이 필요없다.
+    public ResponseEntity reissue(@RequestBody ReissueRequestDto reissueRequestDto) {  // 여기서 Role을 USER로 교체해주지 않으면 다른 로그인 필수 api를 사용하지 못한다.
+        TokenDto tokenDto = tokenService.reissue(reissueRequestDto);
         return ResponseData.toResponseEntity(ResponseCode.REISSUE_SUCCESS, tokenDto);
     }
 

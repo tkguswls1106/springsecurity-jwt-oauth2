@@ -2,7 +2,6 @@ package com.shj.springboot3.jwt;
 
 import com.shj.springboot3.domain.user.Role;
 import com.shj.springboot3.dto.auth.TokenDto;
-import com.shj.springboot3.oauth.CustomOAuth2User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -98,11 +97,7 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
         Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
 
         // Refresh Token 생성
-        String refreshToken = Jwts.builder()  // Refresh Token은 Access Token과는 다르게, 오직 로그인 유지를 위한 것이므로 중요정보 Claim 없이 만료 시간만 담아줘도 된다.
-
-                .setSubject("0")  // reissue 시에, TokenProvider의 getAuthentication에서 권한 정보에 대해 null 검사를 할때 피하기위해서 작성해주었다. 그렇기에 아무것이나 작성해주어도 상관없다.
-                .claim(AUTHORITIES_KEY, "ROLE_GUEST") // reissue 시에, TokenProvider의 getAuthentication에서 권한 정보에 대해 null 검사를 할때 피하기위해서 작성해주었다. 그렇기에 아무 권한이나 작성해주어도 상관없다.
-
+        String refreshToken = Jwts.builder()  // Refresh Token은 Access Token과는 다르게, 오직 재발급(로그인 유지)를 위한 것이므로 중요정보 Claim 없이 만료 시간만 담아줘도 된다.
                 .setExpiration(refreshTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();  // 컴팩트화로써, 최종적으로 JWT를 문자열로 변환하는 역할임.
@@ -169,7 +164,9 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
 - Access Token 만료시, 이를 Refresh Token으로 재발급 받는 과정 -
 1. 프론트에서 로그인하면, 백엔드에서 Access 토큰과 Refresh 토큰을 발급해서 프론트에 전달한다. Refresh 토큰은 DB에도 저장해둔다.
 2. 프론트에서는 백엔드에 api 요청을 보낼 때마다 헤더에 Access 토큰을 담아서 보낸다.
-3. Access 토큰이 만료되었으면, Access 토큰은 헤더에 담고 Refresh 토큰은 RequestBody에 담아 보내서 토큰 재발급을 요청한다.
-4. 헤더의 Access 토큰이 기간만 만료된 유효한 액세스 토큰이고, RequestBody로 받은 Refresh 토큰이 해당 로그인 유저의 DB에 저장된 Refresh 토큰과 값이 같으면서 유효한 토큰이면, Access 토큰을 재발급 받는다.
-5. DB에서 조회결과, 만약 유효하지않은 만료된 Refresh 토큰이라면, 재로그인 요청을 받는다.
+3. Access 토큰이 만료되었다는 에러응답을 백엔드로부터 받았다면, 기존의 Access 토큰과 Refresh 토큰을 dto에 담아 백엔드에게 보내서 토큰 재발급을 요청한다. (이때 헤더에 토큰은 필요없다.)
+4. 전달받은 Refresh 토큰의 유효성을 검사한다.
+5. 전달받은 Access 토큰에서 userId를 꺼내서 DB에 사용자를 검색하고, 해당 사용자의 Refresh 토큰이 전달받은 Refresh 토큰과 일치함을 검사한다.
+6-1. 만약 위의 두 검사가 모두 통과된다면, Access 토큰을 재발급 해준다.
+6-2. 만약 위의 두 검사 중에서 하나라도 통과되지 못한다면, 재발급이 안되고 재로그인을 해야한다.
  */

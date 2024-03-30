@@ -56,10 +56,9 @@ public class SecurityConfig {  // 스프링 시큐리티 구성요소 설정 클
 
                             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // 이 구문은 주로 CORS 사전 요청 처리를 위해 사용되므로, 보안 설정의 초기 부분에 위치하는 것이 일반적이다.
                             .requestMatchers(HttpMethod.POST, "/oauth2/signup").hasAuthority("ROLE_GUEST")  // 참고로 이는 DB뿐만이 아니라, 헤더의 jwt 토큰에 등록해둔 권한도 바꾸어 재발급 받아야 한다.
-                            .requestMatchers(HttpMethod.GET, "/reissue/**").hasAnyAuthority("ROLE_GUEST", "ROLE_USER", "ROLE_ADMIN")
 
 //                            .requestMatchers("/**").permitAll()  // 임시 테스팅 용도
-                            .requestMatchers("/", "/error", "/favicon.ico").permitAll()
+                            .requestMatchers("/", "/error", "/favicon.ico", "/reissue").permitAll()
 
                             .anyRequest().hasAnyAuthority("ROLE_USER", "ROLE_ADMIN");  // permit 지정한 경로들 외에는 전부 USER나 ADMIN 권한이 있어야지 url을 이용 가능하다. (GUEST 불가능)
 //                            .anyRequest().authenticated();  // 위의 permitAll()에 등록된 url들을 제외한 나머지 모든 url들에 대해 jwt 인증이 필요함.

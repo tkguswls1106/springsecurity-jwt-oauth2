@@ -30,6 +30,8 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new RuntimeException("해당 사용자는 존재하지 않습니다."));
 
         if(!user.getRole().equals(Role.ROLE_GUEST)  // Role이 GUEST인 사용자만 이용가능한 api 이다.
+                // 이 로직을 SecurityConfig의 hasAuthority("ROLE_GUEST") 외에도 여기 또 써줘야하는 이유는,
+                // reissue로 인한 재발급 이후에도 이전 엑세스 토큰으로 '/oauth2/signup' 경로에 다시 접근할 경우, 토큰 내의 권한은 GUEST이 맞겠지만 DB 내의 권한은 USER이기에 이러한 비정상적인 접근을 방지할 수 있기 때문이다.
                 || user.getMoreInfo1() != null || user.getMoreInfo2() != null || user.getMoreInfo3() != null) {
             throw new RuntimeException("이미 가입완료 되어있는 사용자입니다.");
         }
