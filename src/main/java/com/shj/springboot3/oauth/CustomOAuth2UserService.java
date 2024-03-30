@@ -25,6 +25,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private static final String NAVER = "naver";
     private static final String KAKAO = "kakao";
+    private static final String GITHUB = "github";
 //    private static final String GOOGLE = "google";
 
     @Override
@@ -68,6 +69,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         }
         if(KAKAO.equals(registrationId)) {
             return SocialType.KAKAO;
+        }
+        if(GITHUB.equals(registrationId)) {
+            return SocialType.GITHUB;
         }
 //        if(GOOGLE.equals(registrationId)) {
 //            return SocialType.GOOGLE;
