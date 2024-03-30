@@ -1,4 +1,4 @@
-## Study - Spring Security & JWT & OAuth2<br>(Google, Kakao, Naver)
+## Study - Spring Security & JWT & OAuth2<br>(Google, Github, Kakao, Naver)
 
 ### < Branch >
 - <strong>master</strong>&nbsp;:<br>
