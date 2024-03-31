@@ -28,6 +28,7 @@ public enum ResponseCode {
     FORBIDDEN_ERROR(StatusItem.FORBIDDEN, MessageItem.FORBIDDEN),
     LOGIN_FAIL(StatusItem.BAD_REQUEST, MessageItem.LOGIN_FAIL),
     TOKEN_EXPIRED(StatusItem.UNAUTHORIZED, MessageItem.TOKEN_EXPIRED),
+    TOKEN_ERROR(StatusItem.UNAUTHORIZED, MessageItem.TOKEN_ERROR),
 
     // ===================== //
     ;

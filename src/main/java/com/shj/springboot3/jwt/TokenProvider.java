@@ -142,7 +142,6 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
             log.info("잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {  // 참고로 ExpiredJwtException은 throw 할 때 파라미터가 필요하기에, JwtExpiredException을 새로 만들어서 throw를 대신 구현하는것도 좋다.
             log.info("만료된 JWT 토큰입니다.");
-            throw new JwtException("토큰 만료 - ExpiredJwtException");
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException e) {
@@ -156,6 +155,15 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
             return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
+        }
+    }
+
+    public boolean isExpiredToken(String accessToken) {  // 반환결과가 true면 토큰이 만료된것임.
+        try {
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
+            return false;
+        } catch (ExpiredJwtException e) {
+            return true;
         }
     }
 }

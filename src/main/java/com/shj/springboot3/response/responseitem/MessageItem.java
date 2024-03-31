@@ -10,6 +10,7 @@ public class MessageItem {
 
     public static final String REISSUE_SUCCESS = "SUCCESS - JWT Access 토큰 재발급 성공";
     public static final String TOKEN_EXPIRED = "ERROR - JWT 토큰 만료 에러";
+    public static final String TOKEN_ERROR = "ERROR - 잘못된 JWT 토큰 에러";
 
     public static final String CREATED_USER = "SUCCESS - 회원 가입 성공";
     public static final String READ_USER = "SUCCESS - 회원 정보 조회 성공";

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*")
+// @CrossOrigin(origins = "*", allowedHeaders = "*")  // SecurityConfig에 대신 만들어주었음.
 @RestController
 @RequiredArgsConstructor
 public class TestController {
@@ -22,7 +22,7 @@ public class TestController {
 
     // Test API
     @GetMapping("/test")  // 이 api는 헤더에 JWT토큰이 반드시 필요하다. (헤더의 토큰을 없애며 테스트 진행하기.)
-    public ResponseEntity test() {
+    public ResponseEntity test() {  // 로그인 사용자의 정보를 조회해줌.
         Long userId = SecurityUtil.getCurrentMemberId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자는 존재하지 않습니다."));

@@ -7,7 +7,6 @@ import com.shj.springboot3.dto.auth.ReissueRequestDto;
 import com.shj.springboot3.dto.auth.TokenDto;
 import com.shj.springboot3.jwt.TokenProvider;
 import com.shj.springboot3.service.TokenService;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -30,16 +29,8 @@ public class TokenServiceImpl implements TokenService {
         String refreshToken = reissueRequestDto.getRefreshToken();
 
         // Refresh Token 유효성 검사
-        boolean isValidateRefreshToken = false;
-        try {
-            isValidateRefreshToken = tokenProvider.validateToken(refreshToken);
-        } catch (JwtException e) {
-            if(e.getMessage().equals("토큰 만료 - ExpiredJwtException")) {
-                isValidateRefreshToken = false;  // Refresh Token도 만료된 상태임.
-            }
-        }
-        if(isValidateRefreshToken == false) {
-            throw new RuntimeException("입력한 Refresh Token은 유효한 토큰이 아닙니다.");
+        if(tokenProvider.validateToken(refreshToken) == false) {
+            throw new RuntimeException("입력한 Refresh Token은 잘못된 토큰입니다.");
         }
 
         // Access Token에서 userId 가져오기

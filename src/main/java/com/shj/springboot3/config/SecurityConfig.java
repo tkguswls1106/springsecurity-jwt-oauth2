@@ -1,5 +1,7 @@
 package com.shj.springboot3.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shj.springboot3.jwt.JwtExceptionFilter;
 import com.shj.springboot3.jwt.JwtFilter;
 import com.shj.springboot3.jwt.TokenProvider;
 import com.shj.springboot3.jwt.handler.JwtAccessDeniedHandler;
@@ -18,6 +20,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @RequiredArgsConstructor
 @Configuration
@@ -26,6 +31,7 @@ import org.springframework.stereotype.Component;
 public class SecurityConfig {  // 스프링 시큐리티 구성요소 설정 클래스 (JWT 사용지원을 위한 구성 또한 포함)
 
     private final TokenProvider tokenProvider;
+    private final ObjectMapper objectMapper;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
@@ -48,6 +54,7 @@ public class SecurityConfig {  // 스프링 시큐리티 구성요소 설정 클
                     sessionManagement
                             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);  // 세션관리 정책을 STATELESS(세션이 있으면 쓰지도 않고, 없으면 만들지도 않는다)
                 })
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(authorizeRequests -> {
                     authorizeRequests
@@ -80,12 +87,27 @@ public class SecurityConfig {  // 스프링 시큐리티 구성요소 설정 클
                         });
                 })
 
-                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtExceptionFilter(objectMapper), JwtFilter.class);
 
-        // - 전체적인 순서: JwtFilter -> JwtAuthenticationEntryPoint
-        // - 토큰 만료시 순서: JwtFilter -> JwtFilter 내의 tokenProvider 에서 '토큰 만료' 로그 출력 -> JwtFilter 내의 filterChain.doFilter(request, response); 실행 -> JwtAuthenticationEntryPoint 에서 401
-        // - 토큰 헤더에 미탑재시 순서: JwtFilter -> JwtFilter 내의 filterChain.doFilter(request, response); 실행 -> JwtAuthenticationEntryPoint 에서 401
+        // - 전체적인 순서: JwtExceptionFilter -> JwtFilter -> JwtAuthenticationEntryPoint
+        // - 토큰 만료시 순서: JwtExceptionFilter -> JwtFilter -> JwtExceptionFilter
+        // - 토큰 헤더에 미탑재시 순서: JwtExceptionFilter -> JwtFilter -> JwtFilter 내의 filterChain.doFilter(request, response); 실행 -> JwtAuthenticationEntryPoint 에서 401
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
