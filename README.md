@@ -1,4 +1,6 @@
 ## [ Backend Repo / Spring ]<br>Study - Spring Security & JWT & OAuth2<br>(Google, Github, Kakao, Naver)
+- <strong>version</strong>&nbsp;:&nbsp;
+Java 17, Spring Boot 3.1.9
 
 ### < Branch >
 - <strong>master</strong>&nbsp;:<br>
