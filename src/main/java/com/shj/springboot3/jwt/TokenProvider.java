@@ -142,7 +142,6 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
             log.info("잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {  // 참고로 ExpiredJwtException은 throw 할 때 파라미터가 필요하기에, JwtExpiredException을 새로 만들어서 throw를 대신 구현하는것도 좋다.
             log.info("만료된 JWT 토큰입니다.");
-            throw new JwtException("토큰 만료 - ExpiredJwtException");
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException e) {
@@ -158,15 +157,13 @@ public class TokenProvider {  // JWT를 생성하고 검증하는 역할을 하�
             return e.getClaims();
         }
     }
-}
 
-/*
-- Access Token 만료시, 이를 Refresh Token으로 재발급 받는 과정 -
-1. 프론트에서 로그인하면, 백엔드에서 Access 토큰과 Refresh 토큰을 발급해서 프론트에 전달한다. Refresh 토큰은 DB에도 저장해둔다.
-2. 프론트에서는 백엔드에 api 요청을 보낼 때마다 헤더에 Access 토큰을 담아서 보낸다.
-3. Access 토큰이 만료되었다는 에러응답을 백엔드로부터 받았다면, 기존의 Access 토큰과 Refresh 토큰을 dto에 담아 백엔드에게 보내서 토큰 재발급을 요청한다. (이때 헤더에 토큰은 필요없다.)
-4. 전달받은 Refresh 토큰의 유효성을 검사한다.
-5. 전달받은 Access 토큰에서 userId를 꺼내서 DB에 사용자를 검색하고, 해당 사용자의 Refresh 토큰이 전달받은 Refresh 토큰과 일치함을 검사한다.
-6-1. 만약 위의 두 검사가 모두 통과된다면, Access 토큰을 재발급 해준다.
-6-2. 만약 위의 두 검사 중에서 하나라도 통과되지 못한다면, 재발급이 안되고 재로그인을 해야한다.
- */
+    public boolean isExpiredToken(String accessToken) {  // 반환결과가 true면 토큰이 만료된것임.
+        try {
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
+            return false;
+        } catch (ExpiredJwtException e) {
+            return true;
+        }
+    }
+}
