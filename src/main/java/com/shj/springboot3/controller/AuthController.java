@@ -68,15 +68,3 @@ public class AuthController {
         return ResponseData.toResponseEntity(ResponseCode.REISSUE_SUCCESS, tokenDto);
     }
 }
-
-
-// (O) 문제점 1. 프론트에서 <a href="/oauth2/authorization/kakao"> 를 어떻게 구현할것인가?
-// (O) 문제점 2. 토큰 만료의 경우를 TokenProvider 또는 JwtFilter 에서 말고 다른곳에서 처리하는 법은? (JwtAuthenticationEntryPoint 대신 JwtExceptionFilter 로 가능할지도)
-// (O) 문제점 3. 토큰 만료의 경우를 걸러냈다치고, 이럴때 리프레쉬 토큰을 재설정해서 프론트에 넘겨주는 법은?
-// (O) 문제점 4. '/oauth2/signup'는 Role.GUEST만, 나머지 api url은 전부 Role.USER 또는 Role.ADMIN 만 사용가능하도록, .requestMatchers 설정하는 법은?
-// (O) 문제점 5. login api와 signup api의 구분은 정확히 어떻게 할것이며 그러한 플로우는 어떻게 진행할것인가?
-// (O) 문제점 6. '.requestMatchers("/**").permitAll()' 이거 없이 어떻게 초반 oauth 로그인을 진행할것인가?
-// (O) 문제점 7. Refresh Token 관련 로직을 마저 구현 완료할것.
-// (O) 문제점 8. 서버가 분리된 rest api 형식의 OAuth2를 구현 완료할것.
-// (O) 문제점 9. JwtFilter의 response를 SimpleUrlAuthenticationFailureHandler처럼 restful하게 getRedirectStrategy().sendRedirect(request, response, redirectUrl); 하는법은?
-// (O) 문제점 10. '/test'를 permitAll()안해두면, 프론트엔드(리액트)에서 loginwait페이지->main페이지 이동할때 로컬스토리지의 'token'과 'expired' 두 변수값만 undefined가 되는 문제가 있다.

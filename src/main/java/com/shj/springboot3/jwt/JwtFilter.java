@@ -28,7 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {  // 커스텀 필터 클�
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String jwt = resolveToken(request);  // 토큰값 문자열 리턴
 
-        if(tokenProvider.isExpiredToken(jwt) == true) {  // 만약 해당 Access Token이 만료되었다면
+        if(StringUtils.hasText(jwt) && tokenProvider.isExpiredToken(jwt) == true) {  // 토큰값이 null이 아닌가 && 해당 Access Token이 만료되었다면
             // request 접근 순서가, 앞에서부터 차례로 'request 요청 -> filter -> DispatcherServlet -> Spring Context' 이다.
             // 예외를 처리해주는 HandlerInterceptor(= @RestControllerAdvice 달아둔 ExceptionHandler)는 Spring Context 안에 존재하기 때문에,
             // filter에서 던지는 예외는 ExceptionHandler에서 처리할 수 없다.
@@ -58,6 +58,8 @@ public class JwtFilter extends OncePerRequestFilter {  // 커스텀 필터 클�
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // 이 메소드는 프론트엔드 팀원이 무슨 경우든간에 일단 헤더에 토큰을 넣고 api요청보내는 사람일때, permitAll()을 해두고 로그인 필요없는 기능 api를 호출할때 헤더의 토큰 만료검사를 피하기 위해 작성된 메소드이다.
+        // 그렇기에, 정석적으로 프론트엔드에서 jwt헤더를 알맞게 잘관리해서 넣고 빼가며 적절히 api요청을 잘보내준다면, 사실상 shouldNotFilter()는 사용할 경우가 없을것이다.
         String[] excludePath = {"/reissue"};
         String path = request.getRequestURI();
         return Arrays.stream(excludePath).anyMatch(path::startsWith);
