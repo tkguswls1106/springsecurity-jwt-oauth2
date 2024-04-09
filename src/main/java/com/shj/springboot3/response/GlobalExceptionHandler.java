@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {  // 참고로 Filter는 DispacherServlet�
 
     @ExceptionHandler(NoSuchUserException.class)
     public ResponseEntity handleNoSuchUserException(NoSuchUserException ex) {
-        log.error(ex.getErrorStatus() + " " + ex.getErrorMessage() + "\n" + "==> error_data / " + ex.getMessage());
+        log.error(ex.getErrorStatus() + " " + ex.getErrorMessage() + "\n" + "==> error_messege / " + ex.getMessage());
         return ResponseData.toResponseEntity(ResponseCode.NOT_FOUND_USER);
     }
 }
